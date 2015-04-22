@@ -114,7 +114,7 @@ public class DemoUtil {
   public static void setDefaultCookieManager() {
     CookieHandler currentHandler = CookieHandler.getDefault();
     if (currentHandler != defaultCookieManager) {
-      CookieHandler.setDefault(defaultCookieManager);
+      CookieHandler.setDefault(defaultCookieManager);//123
     }
   }
 
