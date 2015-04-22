@@ -43,7 +43,7 @@ public class FragmentFilms extends Fragment {
     ViewPager pager;
     TabsDesignViewPagerAdapter tabsDesignViewPagerAdapter;
     SlidingTabLayout tabs;
-    CharSequence titles[] = {"Get Started", "Material Design", "Style", "Patterns"};
+    CharSequence titles[] = {"Phim Bo", "Material Design", "Style", "Patterns"};
     int tabNumber = titles.length;
     int tabsPaddingTop;
     TypedValue typedValueToolbarHeight = new TypedValue();
