@@ -1,0 +1,41 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="bottom"
+    tools:context=".RecyclerFragment">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+
+        android:layout_height="fill_parent"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+       >
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/button_material_light">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="18dp"
+                android:text="Tap: "
+                android:padding="10dp"
+                android:textColor="@color/md_blue_900"
+                android:id="@+id/lbl_ViewSoTap" />
+        </LinearLayout>
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/section_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+
+    </LinearLayout>
+
+</RelativeLayout>

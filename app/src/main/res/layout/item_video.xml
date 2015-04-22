@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<com.example.javier.MaterialDesignApp.RecyclerView.RecyclerViewDemo.GameItemView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/linearLayoutItemNews"
+    android:clickable="true"
+    android:background="?attr/selectableItemBackground"
+    android:layout_height="wrap_content"
+    android:layout_width="wrap_content">
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <ImageView
+            android:id="@+id/img_video"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginBottom="16dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginTop="16dp"
+            android:src="@drawable/ic_contact_icon" />
+
+        <TextView
+                android:id="@+id/tv_sotap"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:gravity="bottom|center"
+                android:text="This is the title"
+                android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+                android:textColor="@color/md_text"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+    </RelativeLayout>
+
+</com.example.javier.MaterialDesignApp.RecyclerView.RecyclerViewDemo.GameItemView>

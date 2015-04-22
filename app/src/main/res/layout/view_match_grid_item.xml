@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.example.javier.MaterialDesignApp.RecyclerView.RecyclerViewDemo.GameItemView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="?android:attr/selectableItemBackground"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:minWidth="@dimen/card_min_width"
+    style="?android:attr/borderlessButtonStyle"
+    android:id="@+id/select"
+    android:gravity="start">
+
+    <ImageView
+        android:id="@+id/img_video"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:layout_gravity="center"
+        android:layout_centerInParent="true"
+        android:scaleType="centerCrop"
+        android:layout_column="0"
+        android:layout_row="0"
+        android:src="@drawable/ic_contact_icon" />
+    <TextView
+        android:id="@+id/text_score_home"
+        android:layout_width="56dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center"
+        android:fontFamily="sans-serif-medium"
+        android:textColor="@color/md_text"
+        android:layout_column="0"
+        android:layout_row="0"
+        android:text="Tap 1"
+        android:background="@drawable/background_game"
+        android:textAppearance="?android:attr/textAppearanceLarge"/>
+</com.example.javier.MaterialDesignApp.RecyclerView.RecyclerViewDemo.GameItemView>
