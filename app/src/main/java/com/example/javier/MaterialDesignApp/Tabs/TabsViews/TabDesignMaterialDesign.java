@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -20,14 +21,20 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.javier.MaterialDesignApp.DetailActivity;
+import com.example.javier.MaterialDesignApp.Model.AFilmModel;
+import com.example.javier.MaterialDesignApp.Model.PageModel;
+import com.example.javier.MaterialDesignApp.PlayerActivity;
 import com.example.javier.MaterialDesignApp.R;
 import com.example.javier.MaterialDesignApp.RecyclerView.RecyclerViewAdapters.DesignAdapter;
+import com.example.javier.MaterialDesignApp.RecyclerView.RecyclerViewAdapters.FILMSAdapter;
 import com.example.javier.MaterialDesignApp.RecyclerView.RecyclerViewClasses.Design;
 import com.example.javier.MaterialDesignApp.RecyclerView.RecyclerViewDecorations.DividerItemDecoration;
 import com.example.javier.MaterialDesignApp.RecyclerView.RecyclerViewUtils.ItemClickSupport;
 import com.example.javier.MaterialDesignApp.Tabs.TabsUtils.SlidingTabLayout;
+import com.example.javier.MaterialDesignApp.Utils.DAL;
 import com.example.javier.MaterialDesignApp.Utils.JsonParser;
 import com.example.javier.MaterialDesignApp.Utils.ScrollManagerToolbarTabs;
+import com.google.gson.Gson;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -54,6 +61,16 @@ public class TabDesignMaterialDesign extends Fragment {
     TypedValue typedValueToolbarHeight = new TypedValue();
     SlidingTabLayout tabs;
     int recyclerViewPaddingTop;
+    ///////////////////////////MY DEFINE/////////////////////////
+    ArrayList<AFilmModel> films = new ArrayList<>();
+    private String json;
+    Listener delegate;
+    private boolean loading = true;
+    int pastVisiblesItems, visibleItemCount, totalItemCount;
+    LinearLayoutManager mLayoutManager;
+    private int page = 0;
+    String urlPostMore;
+    PageModel Page;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -69,6 +86,9 @@ public class TabDesignMaterialDesign extends Fragment {
 
         // Setup swipe to refresh
         swipeToRefresh(view);
+
+        mLayoutManager = new LinearLayoutManager(getActivity());
+        recyclerView.setLayoutManager(mLayoutManager);
 
         return view;
     }
@@ -90,24 +110,123 @@ public class TabDesignMaterialDesign extends Fragment {
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
 
-        urlPost = "http://wordpressdesarrolladorandroid.hol.es/category/diseno/material-design/?json=1";
+        urlPost = "http://nhatphim.com/index/api?type=no&page=0&limit=20";
 
         toolbar = (Toolbar) getActivity().findViewById(R.id.toolbar);
+        films = new ArrayList<>();
         new AsyncTaskNewsParseJson().execute(urlPost);
 
         ItemClickSupport itemClickSupport = ItemClickSupport.addTo(recyclerView);
         itemClickSupport.setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
             @Override
             public void onItemClick(RecyclerView parent, View view, int position, long id) {
-                sharedPreferences.edit().putString("TITLE", designTitle[position]).apply();
-                sharedPreferences.edit().putString("CONTENT", designContent[position]).apply();
-                sharedPreferences.edit().putString("EXCERPT", designExcerpt[position]).apply();
-                sharedPreferences.edit().putString("IMAGE", designImageFull[position]).apply();
-                Intent intent = new Intent(getActivity(), DetailActivity.class);
+                AFilmModel aFilmModel = films.get(position);
+                sharedPreferences.edit().putString("TITLE", aFilmModel.getTitle_en()).apply();
+                sharedPreferences.edit().putString("EXCERPT", aFilmModel.getTitle_vn()).apply();
+                sharedPreferences.edit().putString("IMAGE", aFilmModel.getImages()).apply();
+                Gson gson = new Gson();
+                SharedPreferences appSharedPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
+                SharedPreferences.Editor prefsEditor = appSharedPrefs.edit();
+                json = gson.toJson(films.get(position));
+                prefsEditor.putString("AFilmModel", json);
+                prefsEditor.commit();
+                delegate.GetFinish();
+            }
+        });
+        delegate = new Listener() {
+            @Override
+            public void GetFinish() {
+
+                Intent intent = new Intent(getActivity(), PlayerActivity.class);
                 startActivity(intent);
+            }
+        };
+        delegate = new Listener() {
+            @Override
+            public void GetFinish() {
+
+                Intent intent = new Intent(getActivity(), PlayerActivity.class);
+                startActivity(intent);
+            }
+        };
+        recyclerView.setOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+            }
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                visibleItemCount = mLayoutManager.getChildCount();
+                totalItemCount = mLayoutManager.getItemCount();
+                pastVisiblesItems = mLayoutManager.findFirstVisibleItemPosition();
+
+                if (loading) {
+                    if ((visibleItemCount + pastVisiblesItems) >= totalItemCount) {
+
+                        loading = false;
+
+                        String Link = "http://nhatphim.com/index/api?type=no&page=" + page + "&limit=20";
+                        LoadMore(Link);
+                        Toast toast = Toast.makeText(getActivity(), String.valueOf(films.size()), Toast.LENGTH_SHORT);
+                        toast.show();
+                    }
+                }
+
             }
         });
 
+    }
+
+    public void LoadMore(String link) {
+        urlPostMore = link;
+        recyclerViewAdapter.notifyItemInserted(films.size());
+        new AsyncTaskNewsParseJsonLoadMore().execute(urlPostMore);
+
+    }
+
+    public class AsyncTaskNewsParseJsonLoadMore extends AsyncTask<String, String, String> {
+
+
+        @Override
+        protected void onPreExecute() {
+        }
+
+        // get JSON Object
+        @Override
+        protected String doInBackground(String... url) {
+
+            urlPostMore = url[0];
+            try {
+                jsonObjectDesignPosts = JsonParser.readJsonFromUrl(urlPostMore);
+                films = DAL.getFilms(jsonObjectDesignPosts);
+                PageModel _page = DAL.getPage(jsonObjectDesignPosts);
+                page = Integer.parseInt(_page.getPage());
+                page++;
+            } catch (IOException | JSONException e) {
+                e.printStackTrace();
+                error = true;
+            }
+            return null;
+        }
+
+        // Set facebook items to the textviews and imageviews
+        @Override
+        protected void onPostExecute(String result) {
+            swipeRefreshLayout = (android.support.v4.widget.SwipeRefreshLayout) view.findViewById(R.id.swipe_container);
+            swipeRefreshLayout.setRefreshing(false);
+            ProgressBar progressBar = (ProgressBar) view.findViewById(R.id.progressBar);
+            progressBar.setVisibility(View.GONE);
+            recyclerViewAdapter.notifyDataSetChanged();
+            loading = true;
+
+        }
+
+    }
+
+    interface Listener {
+        public void GetFinish();
     }
 
     private void swipeToRefresh(View view) {
@@ -120,7 +239,7 @@ public class TabDesignMaterialDesign extends Fragment {
         getActivity().getTheme().resolveAttribute(R.attr.colorAccent, typedValueColorAccent, true);
         final int colorPrimary = typedValueColorPrimary.data, colorAccent = typedValueColorAccent.data;
         swipeRefreshLayout.setColorSchemeColors(colorPrimary, colorAccent);
-
+        loading = true;
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -163,21 +282,11 @@ public class TabDesignMaterialDesign extends Fragment {
             urlPost = url[0];
             try {
                 jsonObjectDesignPosts = JsonParser.readJsonFromUrl(urlPost);
-                postNumber = jsonObjectDesignPosts.getJSONArray("posts").length();
-                jsonArrayDesignContent = jsonObjectDesignPosts.getJSONArray("posts");
-                sharedPreferences.edit().putString("DESIGN", jsonArrayDesignContent.toString()).apply();
-                designTitle = new String[postNumber];
-                designExcerpt = new String[postNumber];
-                designContent = new String[postNumber];
-                designImage = new String[postNumber];
-                designImageFull = new String[postNumber];
-                for (int i = 0; i < postNumber; i++) {
-                    designTitle[i] = Html.fromHtml(jsonObjectDesignPosts.getJSONArray("posts").getJSONObject(i).getString("title")).toString();
-                    designExcerpt[i] = Html.fromHtml(jsonObjectDesignPosts.getJSONArray("posts").getJSONObject(i).getString("excerpt")).toString();
-                    designContent[i] = jsonObjectDesignPosts.getJSONArray("posts").getJSONObject(i).getString("content");
-                    designImage[i] = Html.fromHtml(jsonObjectDesignPosts.getJSONArray("posts").getJSONObject(i).getJSONObject("thumbnail_images").getJSONObject("thumbnail").getString("url")).toString();
-                    designImageFull[i] = Html.fromHtml(jsonObjectDesignPosts.getJSONArray("posts").getJSONObject(i).getJSONObject("thumbnail_images").getJSONObject("full").getString("url")).toString();
-                }
+                jsonArrayDesignContent = jsonObjectDesignPosts.getJSONArray("row");
+                films.clear();
+                Page = DAL.getPage(jsonObjectDesignPosts);
+                films = DAL.getFilms(jsonObjectDesignPosts);
+                sharedPreferences.edit().putString("DEVELOP", jsonArrayDesignContent.toString()).apply();
             } catch (IOException | JSONException e) {
                 e.printStackTrace();
                 designTitle = new String[0];
@@ -190,19 +299,15 @@ public class TabDesignMaterialDesign extends Fragment {
         @Override
         protected void onPostExecute(String result) {
 
-            designs = new ArrayList<>();
-
-            //Data set used by the recyclerViewAdapter. This data will be displayed.
-            if (designTitle.length != 0) {
-                for (int i = postNumber - 1; i >= 0; i--) {
-                    designs.add(new Design(designTitle[i], designExcerpt[i], designImage[i]));
-                }
-            }
-            if (error) {
-                Toast.makeText(getActivity(), "Error de conexión", Toast.LENGTH_LONG).show();
-            }
             // Create the recyclerViewAdapter
-            recyclerViewAdapter = new DesignAdapter(getActivity(), designs);
+            recyclerViewAdapter = new FILMSAdapter(getActivity(), films);
+            recyclerView.setAdapter(recyclerViewAdapter);
+
+            swipeRefreshLayout = (android.support.v4.widget.SwipeRefreshLayout) view.findViewById(R.id.swipe_container);
+            swipeRefreshLayout.setRefreshing(false);
+
+            // Create the recyclerViewAdapter
+            recyclerViewAdapter = new FILMSAdapter(getActivity(), films);
             recyclerView.setAdapter(recyclerViewAdapter);
 
             swipeRefreshLayout = (android.support.v4.widget.SwipeRefreshLayout) view.findViewById(R.id.swipe_container);

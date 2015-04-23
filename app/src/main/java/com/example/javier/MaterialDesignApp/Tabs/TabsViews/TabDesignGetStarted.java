@@ -28,6 +28,7 @@ import com.example.javier.MaterialDesignApp.RecyclerView.RecyclerViewAdapters.FI
 import com.example.javier.MaterialDesignApp.RecyclerView.RecyclerViewDecorations.DividerItemDecoration;
 import com.example.javier.MaterialDesignApp.RecyclerView.RecyclerViewUtils.ItemClickSupport;
 import com.example.javier.MaterialDesignApp.Tabs.TabsUtils.SlidingTabLayout;
+import com.example.javier.MaterialDesignApp.Utils.DAL;
 import com.example.javier.MaterialDesignApp.Utils.JsonParser;
 import com.example.javier.MaterialDesignApp.Utils.ScrollManagerToolbarTabs;
 import com.google.gson.Gson;
@@ -63,7 +64,8 @@ public class TabDesignGetStarted extends Fragment {
     private boolean loading = true;
     int pastVisiblesItems, visibleItemCount, totalItemCount;
     LinearLayoutManager mLayoutManager;
-    private  int page =0;
+    private int page = 0;
+
     //private  int totalpage =0;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -105,16 +107,17 @@ public class TabDesignGetStarted extends Fragment {
         urlPost = "http://nhatphim.com/index/api?type=yes&page=0&limit=20";
 
         toolbar = (Toolbar) getActivity().findViewById(R.id.toolbar);
-        films = new ArrayList<AFilmModel>();
+        films = new ArrayList<>();
         new AsyncTaskNewsParseJson().execute(urlPost);
 
         ItemClickSupport itemClickSupport = ItemClickSupport.addTo(recyclerView);
         itemClickSupport.setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
             @Override
             public void onItemClick(RecyclerView parent, View view, int position, long id) {
-                sharedPreferences.edit().putString("TITLE", films.get(position).getTitle_en()).apply();
-                sharedPreferences.edit().putString("EXCERPT", films.get(position).getTitle_vn()).apply();
-                sharedPreferences.edit().putString("IMAGE", films.get(position).getImages()).apply();
+                AFilmModel aFilmModel = films.get(position);
+                sharedPreferences.edit().putString("TITLE", aFilmModel.getTitle_en()).apply();
+                sharedPreferences.edit().putString("EXCERPT", aFilmModel.getTitle_vn()).apply();
+                sharedPreferences.edit().putString("IMAGE", aFilmModel.getImages()).apply();
                 Gson gson = new Gson();
                 SharedPreferences appSharedPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
                 SharedPreferences.Editor prefsEditor = appSharedPrefs.edit();
@@ -150,11 +153,11 @@ public class TabDesignGetStarted extends Fragment {
                 if (loading) {
                     if ((visibleItemCount + pastVisiblesItems) >= totalItemCount) {
 
-                           loading = false;
+                        loading = false;
 
-                        String Link ="http://nhatphim.com/index/api?type=yes&page="+page+"&limit=20";
+                        String Link = "http://nhatphim.com/index/api?type=yes&page=" + page + "&limit=20";
                         LoadMore(Link);
-                        Toast toast = Toast.makeText(getActivity(),String.valueOf(films.size()), Toast.LENGTH_SHORT);
+                        Toast toast = Toast.makeText(getActivity(), String.valueOf(films.size()), Toast.LENGTH_SHORT);
                         toast.show();
                     }
                 }
@@ -220,17 +223,22 @@ public class TabDesignGetStarted extends Fragment {
             urlPost = url[0];
             try {
                 jsonObjectDesignPosts = JsonParser.readJsonFromUrl(urlPost);
-                postNumber = jsonObjectDesignPosts.getJSONArray("row").length();
+                jsonArrayDesignContent = jsonObjectDesignPosts.getJSONArray("row");
+                films.clear();
+                Page = DAL.getPage(jsonObjectDesignPosts);
+                films = DAL.getFilms(jsonObjectDesignPosts);
+                sharedPreferences.edit().putString("DEVELOP", jsonArrayDesignContent.toString()).apply();
+                /*postNumber = jsonObjectDesignPosts.getJSONArray("row").length();
                 Page = new PageModel();
                 jsonArrayDesignContent = jsonObjectDesignPosts.getJSONArray("row");
                 Page.setPage(jsonObjectDesignPosts.getString("page"));
                 Page.setTotalView(jsonObjectDesignPosts.getString("totalview"));
                 Page.setTotalRow(jsonObjectDesignPosts.getString("totalrow"));
-                Page.setTotalPage(jsonObjectDesignPosts.getString("totalpage"));
-                films.clear();
-                sharedPreferences.edit().putString("DEVELOP", jsonArrayDesignContent.toString()).apply();
+                Page.setTotalPage(jsonObjectDesignPosts.getString("totalpage"));*/
 
-                for (int i = 0; i < postNumber; i++) {
+
+
+                /*for (int i = 0; i < postNumber; i++) {
                     film = new AFilmModel();
                     JSONObject jsonobject = jsonArrayDesignContent.getJSONObject(i);
                     film.setId(jsonobject.getString("id"));
@@ -240,8 +248,8 @@ public class TabDesignGetStarted extends Fragment {
                     film.setTitle_en(jsonobject.getString("title_en"));
                     film.setTitle_vn(jsonobject.getString("title_vn"));
                     films.add(film);
-                }
-             //   totalpage = Integer.parseInt(Page.getTotalPage());
+                }*/
+                //   totalpage = Integer.parseInt(Page.getTotalPage());
             } catch (IOException | JSONException e) {
                 e.printStackTrace();
 
@@ -298,7 +306,7 @@ public class TabDesignGetStarted extends Fragment {
                 jsonObjectDesignPosts = JsonParser.readJsonFromUrl(urlPostMore);
                 postNumber = jsonObjectDesignPosts.getJSONArray("row").length();
                 jsonArrayDesignContent = jsonObjectDesignPosts.getJSONArray("row");
-                PageModel  _page = new PageModel();
+                PageModel _page = new PageModel();
 
                 _page.setPage(jsonObjectDesignPosts.getString("page"));
 
@@ -318,7 +326,7 @@ public class TabDesignGetStarted extends Fragment {
                     film.setTitle_vn(jsonobject.getString("title_vn"));
                     films.add(film);
                 }
-                page =Integer.parseInt(_page.getPage());
+                page = Integer.parseInt(_page.getPage());
                 page++;
             } catch (IOException | JSONException e) {
                 e.printStackTrace();
@@ -336,7 +344,7 @@ public class TabDesignGetStarted extends Fragment {
             ProgressBar progressBar = (ProgressBar) view.findViewById(R.id.progressBar);
             progressBar.setVisibility(View.GONE);
             recyclerViewAdapter.notifyDataSetChanged();
-            loading=true;
+            loading = true;
 
         }
 

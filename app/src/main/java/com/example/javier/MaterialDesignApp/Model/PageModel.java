@@ -1,5 +1,8 @@
 package com.example.javier.MaterialDesignApp.Model;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 /**
  * Created by Envy on 13/03/2015.
  */
@@ -42,5 +45,17 @@ public class PageModel {
         this.totalPage = totalPage;
     }
 
+    public PageModel(JSONObject jsonObject) {
+        try {
+            this.totalView = jsonObject.getString("totalview");
+            this.totalRow = jsonObject.getString("totalrow");
+            this.page = jsonObject.getString("page");
+            this.totalPage = jsonObject.getString("totalpage");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
 
+    public PageModel() {
+    }
 }

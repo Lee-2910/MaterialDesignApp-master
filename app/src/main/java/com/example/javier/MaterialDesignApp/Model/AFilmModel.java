@@ -1,5 +1,9 @@
 package com.example.javier.MaterialDesignApp.Model;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 
@@ -72,5 +76,22 @@ public class AFilmModel implements Serializable {
         this.server = server;
     }
 
+    public AFilmModel(JSONObject jsonObject) {
 
+        try {
+            this.id =jsonObject.getString("id");
+            this.id_film = jsonObject.getString("id_film");
+            this.category = jsonObject.getString("category");
+            this.title_vn = jsonObject.getString("title_vn");
+            this.title_en = jsonObject.getString("title_en");
+            this.images = jsonObject.getString("images");
+        }
+        catch (JSONException e)
+        {
+              e.printStackTrace();
+        }
+    }
+
+    public AFilmModel() {
+    }
 }
