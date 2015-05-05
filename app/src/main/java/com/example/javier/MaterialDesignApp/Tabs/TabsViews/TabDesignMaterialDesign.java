@@ -68,7 +68,7 @@ public class TabDesignMaterialDesign extends Fragment {
     private boolean loading = true;
     int pastVisiblesItems, visibleItemCount, totalItemCount;
     LinearLayoutManager mLayoutManager;
-    private int page = 0;
+    private int page = 1;
     String urlPostMore;
     PageModel Page;
 
@@ -200,7 +200,7 @@ public class TabDesignMaterialDesign extends Fragment {
             urlPostMore = url[0];
             try {
                 jsonObjectDesignPosts = JsonParser.readJsonFromUrl(urlPostMore);
-                films = DAL.getFilms(jsonObjectDesignPosts);
+                films.addAll(DAL.getFilms(jsonObjectDesignPosts));
                 PageModel _page = DAL.getPage(jsonObjectDesignPosts);
                 page = Integer.parseInt(_page.getPage());
                 page++;
